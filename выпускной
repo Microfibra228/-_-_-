@@ -1,0 +1,310 @@
+from random import *
+from time import sleep
+
+result_d1 = 'На совещании вы пытались вернуть медецинские технологии, но пришельцы сошлись только на 2 кораблях и 1 ' \
+            'шахтёре '
+result_d2 = 'Вы вышли на эмоции из-за этого пришельцы замышляют, что то коварное'
+result_d3 = 'Контакт стал налаживаться. Пришелицы подарили 2 техниума'
+result_d4 = 'На совешании вы узнали, что пришелцы организовали станции, где есть части вооружения и технологий'
+counter_d = 0
+
+result_a1 = 'На этой космической станции пришельцы занимались добычей руд. Мы забрали: 5 железа, 3 техниума и 3 шахтёра'
+result_a2 = 'Эта космическая станция служила военной базой. Мы забрали: 4 корабля, 200 роботов, 3 шахтёра'
+result_a3 = 'Эта космическая станция ещё не достроенна. Единственные два корабля мы уничтожили'
+result_a4 = 'На этой космической станции пришельцы организовали казарму. Мы забрали 200 роботов'
+counter_a = 0
+
+
+result_diplomacy = [result_d1, result_d2, result_d3, result_d4]
+result_attack = [result_a1, result_a2, result_a3, result_a4]
+
+game_ok = True
+stage = 4
+print_info = True
+
+
+class Player:
+    def __init__(self, iron, stone, technium, ship, robot, miners):
+        # Ресурсы игрока
+        self.iron = iron            # Железо
+        self.stone = stone          # Камень
+        self.technium = technium    # Техниум (руда для создания техники и оружия)
+        # Вооружение и техника игрока
+        self.ship = ship            # Космические корабли (нужны в последней битве)
+        self.robot = robot          # Роботы главная сила вместо солдат
+        self.miners = miners        # Шахтёры будут добывать рандомные руды
+
+    def mine(self):
+        len_mine = randint(4, 9)
+        for i in range(len_mine):
+            turn_list = ['право', 'лево']
+            deposit_ore = choice(turn_list)
+            print()
+            question = input('Иследуем шахту. Куда пойдёшь (право/лево)')
+            print()
+            if question == deposit_ore:
+                ore_list = ['камень', 'железо', 'железо', 'камень', 'техниум', 'техниум', 'железо', 'камень']
+                mined_ore = choice(ore_list)
+                player.iron += 1 if mined_ore == 'железо' else 0
+                player.stone += 1 if mined_ore == 'камень' else 0
+                player.technium += 1 if mined_ore == 'техниум' else 0
+                print()
+                print('Ооо здесть что-то есть! Здесь ты нашёл', mined_ore)
+                print()
+            else:
+                print('Здесь руды не найдено.')
+                print()
+        print()
+        print("Странный запах. Похоже рядом облоко химических отходов. Нужно выбираться!")
+        print()
+
+    def diplomacy(self):
+        print('Совешание началось')
+        sleep(3)
+        result = choice(result_diplomacy)
+        print(result)
+        self.ship += 2 if result == result_d1 else 0
+        self.technium += 2 if result == result_d3 else 0
+        self.miners += 1 if result == result_d1 else 0
+
+    def atack(self):
+        result = choice(result_attack)
+        print()
+        print('Штурм начался!')
+        print()
+        sleep(1)
+        print('О нет люди нападают! Бегите!')
+        sleep(2)
+        print('О нет, Джимми, что они с тобой сделали?!')
+        sleep(3)
+        print('Мои ноги ааа!')
+        sleep(2)
+        print()
+        print(result)
+        print()
+        player.ship += 4 if result == result_a2 else 0
+        player.miners += 3 if result == result_a1 or result_a2 else 0
+        player.robot += 200 if result == result_a2 or result_a4 else 0
+        player.technium += 3 if result == result_a1 else 0
+        player.iron += 5 if result == result_a1 else 0
+
+    def craft(self):
+        if player.iron >= 2 and player.stone >= 2 and player.technium >= 2:
+            print()
+            question = input('Что ты хочешь скрафтить? (корабль/роботы/шахтёр)')
+            print()
+            if question == 'корабль':
+                player.ship += 1 if player.iron >= 2 and player.technium >= 1 else 0
+                player.iron -= 2
+                player.technium -= 1
+            if question == 'роботы':
+                player.robot += 50 if player.iron >= 2 else 0
+                player.iron -= 2
+            if question == 'шахтёр':
+                player.miners += 1 if player.iron >= 2 and player.stone >= 2 and player.technium >= 2 else 0
+                player.iron -= 2
+                player.stone -= 2
+                player.technium -= 2
+        else:
+            print('К сожалению недостаточно рессурсов. Иди работай')
+            print()
+
+    def miner(self):
+        explosion_probability = randint(1, 15)
+        if player.miners > 0:
+            if explosion_probability == 15:
+                print()
+                print()
+                print('**Бум** Похоже, когда шахётр добывал руды он наткнулся на облоко взрыво-опасных веществ.')
+                print()
+                player.miners -= 1
+            else:
+                ore_list = ['камень', 'железо', 'камень', 'техниум', 'техниум', 'железо', 'камень']
+                mined_ore = choice(ore_list)
+                random_amount = randint(1, 3)
+                amount_ore = random_amount * player.miners
+
+                player.iron += amount_ore if mined_ore == 'железо' else 0
+                player.stone += amount_ore if mined_ore == 'камень' else 0
+                player.technium += amount_ore if mined_ore == 'техниум' else 0
+
+                if amount_ore != 0:
+                    print('Шахтёр нашел ', mined_ore, ' в колличестве:', amount_ore)
+                    print()
+
+    def info(self):
+        print()
+        print('Вот твои ресурсы:')
+        print('Камень: ', player.stone, ' Железо: ', player.iron, ' Техниум: ', player.technium)
+        print()
+        print('Вот твоё вооружение:')
+        print('Корабли: ', player.ship, ' Роботы: ', player.robot, ' Шахтёры: ', player.miners)
+        print()
+
+
+player = Player(12, 12, 12, 0, 0, 0)
+
+
+print('Место: Земля| Год: 7023')
+print('Огонь. Взрывы. Разрушение. Крики и боль.')
+print('Всё кричит о том, что недавно на Землю напали пришельцы. Технически они были развиты хуже.')
+print('Единственные их преимущество - численное. В первую очередь они напали на главныйй штаб Управленца')
+print('Управленец в это время выполняет роль президента Мира. Он самый главный на планете.')
+print('Каждый управленец должен выбрать Приемника, любой человек на Земле моложе 14 лет')
+print('Посмотрим где они сейчас.')
+print('')
+sleep(1)
+print('-Управленец, вы в критическо-ужасном состоянии. Вас срочно нужно доставить в больницу')
+sleep(1)
+print('-спаси их...')
+sleep(0.5)
+print('-Кого?!')
+sleep(0.5)
+print('...')
+sleep(0.3)
+print()
+print('После того, как Приемник доставил Управленца в больницу, врач доложил о состоянии пациента')
+sleep(0.5)
+print()
+print('-Доктор, что с ним?')
+sleep(0.5)
+print('-Состояние плачевное. Он впал в кому и состояние ухудшается. С нашими технологиями мы могли бы его\n '
+      'вылечить, но пришельцы украли не только всё вооружение, но заглянули в лаборатории и больницы')
+sleep(0.5)
+print('-Может быть можно что-то сделать')
+sleep(0.5)
+print('-Да, востановить вооружение и вернуть технику')
+sleep(0.5)
+print('-Так и поступим')
+print()
+sleep(0.5)
+
+while game_ok:
+
+    player.miner()
+
+    if stage == 1:
+        if print_info:
+            print('Пока дела плохи. Тебе нужно развиться. Рядом есть шахты, сходи туда. Вдруг инженеры смогут что-то '
+                  'построить')
+            print()
+            print('Программа: Ты на первой стадии, пока тебе доступны только три действия-локации \n'
+                  'шахты/крафт/посмотреть рессурсы. Что бы перейти на следующую стадию копайся в шахте и \n'
+                  'крафти вооружение(корабли и роботы), а шахтёры будут добывать за тебя руды, чем больше шахтёров, \n'
+                  'тем больше рессурсов. Вот крафты:Корабль - 2 железа, 1 техниум. 50 роботов - 2 железа. Шахтёр - 2 \n'
+                  'железа, 2 камня, 2 техниума. Что бы перейти на следующую стадию нужно скрафтить:\n'
+                  '2 корабля, 150 роботов, 1 шахтёр.')
+            print()
+            print_info = False
+        question = input('Какое действие вы хотите совершить(шахта/крафт/посмотреть ресурсы): ')
+        question.lower()
+        print()
+
+        if question == 'шахта':
+            player.mine()
+        elif question == 'крафт':
+            player.craft()
+        elif question == 'посмотреть ресурсы':
+            player.info()
+
+        if player.ship >= 2 and player.robot >= 150 and player.miners >= 1:
+            stage = 2
+            print_info = True
+
+    if stage == 2:
+        if print_info:
+            print('Поздравляю ты перешёл на слелующую стадию! Теперь у тебя уже есть немного ресурсов и вооружение. \n'
+                  'Доступно новое действие - дипломатия. Выбрав дипломатию ты летишь на переговоры с пришельцами\n'
+                  'и пытаешься договориться. '
+                  'Что бы перейти на следующую стадию нужно:\n'
+                  '4 корабля, 300 роботов, 3 шахтёра и использовать дипломатию 3 раза.\n')
+            print_info = False
+            print()
+        question = input('Какое действие вы хотите совершить(шахта/крафт/дипломатия/посмотреть ресурсы): ')
+        print()
+        question.lower()
+
+        if question == 'шахта':
+            player.mine()
+        elif question == 'крафт':
+            player.craft()
+        elif question == 'дипломатия':
+            player.diplomacy()
+            counter_d += 1
+        elif question == 'посмотреть ресурсы':
+            player.info()
+
+        if player.ship >= 4 and player.robot >= 300 and player.miners >= 3 and counter_d >= 3:
+            stage = 3
+            print_info = True
+
+    if stage == 3:
+        if print_info:
+            print('Поздравляю ты перешёл на слелующую стадию! Теперь ты сформировал хоть какую-то армию. \n'
+                  'Доступно новое действие - атака, на переговорах с пришельцами ты узнал,\n'
+                  ' что у них есть космические базы. И теперь у тебя хватает вооружения туда наведаться.\n'
+                  'Оставшиеся спутники постаянно находят новые базы. Что бы перейти на финальную стадию нужно:\n'
+                  '9 кораблей, 600 роботов, 8 шахтёров, использовать дипломатию 5 раз и битву 3')
+            print_info = False
+
+        print()
+        question = input('Какое действие вы хотите совершить(шахта/крафт/дипломатия/атака/посмотреть ресурсы): ')
+        print()
+        question.lower()
+
+        if question == 'шахта':
+            player.mine()
+        elif question == 'крафт':
+            player.craft()
+        elif question == 'дипломатия':
+            player.diplomacy()
+            counter_d += 1
+        elif question == 'атака':
+            player.atack()
+            counter_a += 1
+        elif question == 'посмотреть ресурсы':
+            player.info()
+
+        if player.ship >= 9 and player.robot >= 600 and player.miners >= 8 and counter_d >= 5 and counter_a >= 3:
+            stage = 4
+            print_info = True
+            #
+    if stage == 4:
+        if print_info:
+            print('Поздравляю ты перешёл на финальную стадию! Ты оцениваешь сколько вооружения тебе потребуется'
+                  ' для битвы. И понимаешь, что уже скоро ты сможешь начать сражение'
+                  'Доступно новаое действие - битва. Выбрав битву, развиваться уже нельзя и игра переходит к концовке')
+            print_info = False
+
+        question = input('Какое действие вы хотите совершить(шахта/крафт/дипломатия/атака/посмотреть ресурсы/битва): ')
+        question.lower()
+
+        if question == 'шахта':
+            player.mine()
+        elif question == 'крафт':
+            player.craft()
+        elif question == 'дипломатия':
+            player.diplomacy()
+            counter_d += 1
+        elif question == 'атака':
+            player.atack()
+            counter_a += 1
+        elif question == 'посмотреть ресурсы':
+            player.info()
+        elif question == 'битва':
+            break
+
+
+print('Приемник один сидит в комнате и продумывает тактику предстаящего боя. Секретарь вбегает в комнату и говорит:')
+sleep(6)
+print('-Босс, наши спутники засекли приближение пришельцев. Похоже они напали на нас.')
+sleep(6)
+print('-Нет! Снова?')
+sleep(2)
+print('-У них сотни кораблей, тысячи солдат. Мы не сможем защитится!')
+sleep(4)
+print('-Нет, не в этот раз! Готовь всё вооружение. Я уду за ними!')
+print()
+sleep(4)
+print('to be continued...')
+
